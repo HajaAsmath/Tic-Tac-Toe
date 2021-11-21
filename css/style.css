@@ -106,11 +106,15 @@ html body {
     margin: 0 auto;
 }
 
-#restart {
-    height: 50px;
-    width: 50px;
+#png-cnt {
+    text-align: center;
+}
+
+.png {
+    font-size: 50px !important;
     cursor: pointer;
-    margin-top: 2em;
+    margin-top: 1em;
+    color: rgb(255, 255, 255);
 }
 
 #result {

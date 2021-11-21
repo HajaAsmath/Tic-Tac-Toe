@@ -2,10 +2,11 @@
 <head>
     <link rel='stylesheet' href='css/style.css'/>
     <meta name="viewport" content="width=device-width initial-scale=1.0"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
     <main>
-        <div id='first-page' style="display: none;">
+        <div id='first-page'>
             <div id="banner">
                 <h1>Tic Tac Toe</h1>
             </div>
@@ -19,7 +20,7 @@
                 </div>
             </div>
         </div>
-        <div id="second-page">
+        <div id="second-page" style='display: none'>
             <div id="banner">
                 <h1>Let's Play</h1>
             </div>
@@ -42,7 +43,10 @@
         <div id="overlay">
             <div id='overlay-container'>
                 <div id="message-container">
-                    <img id='restart' src="pngs/restart.png"/>
+                    <div id='png-cnt'>
+                        <span id='restart' class="material-icons png">refresh</span>
+                        <span id='home' class="material-icons png">home</span>
+                    </div>
                 </div>
             </div>
         </div>

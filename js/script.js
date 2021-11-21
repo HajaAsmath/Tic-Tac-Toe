@@ -85,6 +85,7 @@ let gamePlay = (function() {
     let boxes = document.querySelectorAll(selector);
     let restartButton = document.querySelector('#restart');
     let humanGif = document.querySelector('#human');
+    let homeButton = document.querySelector('#home');
 
     let player1 = player('Player 1');
     let player2 = player('Player 2');
@@ -94,6 +95,16 @@ let gamePlay = (function() {
             box.addEventListener('click', addXorO);
         });
         restartButton.addEventListener('click', gamePlay.refresh.bind(this, player1, player2));
+        humanGif.addEventListener('click', function() {
+            document.querySelector('#first-page').style.display = 'none';
+            document.querySelector('#second-page').style.display = 'block';
+        });
+
+        homeButton.addEventListener('click', function() {
+            gamePlay.refresh(player1, player2);
+            document.querySelector('#first-page').style.display = 'block';
+            document.querySelector('#second-page').style.display = 'none';
+        });
     }
 
     function addXorO(e) {
