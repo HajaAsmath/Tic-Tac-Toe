@@ -1,111 +1,192 @@
-const P1 = 'P1';
-const P2 = 'P2';
+const P1 = 'X';
+const P2 = 'O';
+let aiActive = false;
 
-let player = function(name) {
-    let playerArray = Array(9).fill(0);
+let player = function(name, mark) {
 
     this.name = name;
 
-    this.fillPlayerArray = function(index) {
-        playerArray[index] = 1;
-    }
+    this.mark = mark;
 
-    this.getPlayerArray = function() {
-        return playerArray;
-    }
-
-    this.clearPlayerArray = function() {
-        playerArray = Array(9).fill(0);
-    }
-
-    return {fillPlayerArray, getPlayerArray, name, clearPlayerArray};
+    return {name, mark};
 };
+
+let gameBoard = (function() {
+
+    let board = [...Array(9).keys()];
+
+
+    this.clearBoard = function() {
+        for(let i = 0;i<board.length;i++){
+            board[i] = i;
+        }
+    }
+
+    return {board, clearBoard};
+})();
 
 let gamePlay = (function() {
     
-    let turn = true;
+    let turn = P2;
 
     let winningPositions = [7, 56, 73, 84, 146, 273, 292, 448];
 
-    this.checkArray = function(array) {
-        let str = array.join('');
-        let n = parseInt(str, 2);
-        let setBitsInN = checkSetbits(n);
-        if(setBitsInN > 2) {
-            for(let i = 0; i<winningPositions.length; i++) {
-                let res = n & winningPositions[i];
-                if(res == winningPositions[i])
-                    return true;
+    this.checkCurrentState = function(board, currMark) {
+        let binaryNum = '';
+        let flag = false;
+        for (let i = 0; i < 9; i++) {
+            if (board[i] == currMark) {
+                binaryNum += '1';
+            } else {
+                binaryNum += '0';
             }
         }
+        binaryNum = parseInt(binaryNum ,2);
+        winningPositions.forEach(num => {
+            let res = binaryNum & num;
+            if(res == num) {
+                flag = true;
+            }
+        })
+        return flag;
+    }
+
+    this.fetchEmptyIndex = function(board) {
+        let emptyIndexes = [];
+        for(let i = 0;i<board.length; i++) {
+            if(board[i] != 'X' && board[i] != 'O') {
+                emptyIndexes.push(i);
+            }
+        }
+        
+        return emptyIndexes;
+    }
+
+    this.fillBoardWithMark = function(board, index, mark) {
+        board[index] = mark;
+    }
+
+    this.setTurn = function(turn) {
+        this.turn = turn;
     }
 
     this.getTurn = function() {
-        if(turn) {
-            turn = false;
-            return P1;
-        } else {
-            turn = true;
-            return P2;
-        }
-    }
+        return this.turn;
+    };
 
     this.displayOverlay = function(winner) {
         let ele = document.createElement('label');
         ele.setAttribute('id','result');
-        ele.textContent = winner + ' won';
+        if(winner == '') {
+            ele.textContent = 'Game tied';
+        } else {
+            ele.textContent = winner + ' won';
+        }
         let messageDiv = document.querySelector('#message-container');
-        console.log(ele); 
         messageDiv.insertBefore(ele, messageDiv.childNodes[messageDiv.childNodes.length - 2]);
         document.querySelector('#overlay').style.display = 'block';
-    }
+    };
 
-    this.refresh = function(p1, p2) {
-        p1.clearPlayerArray();
-        p2.clearPlayerArray();
+    this.refresh = function() {
+        turn = P2;
+        gameBoard.clearBoard();
         document.querySelectorAll('#game-container img').forEach(ele => ele.remove());
         document.querySelector('#result').remove();
         document.querySelector('#overlay').style.display = 'none';
-    }
+    };
 
+    // this.fillInRandomBox = function(board) {
+    //     let random =  Math.floor((Math.random() * 9) + 1);
 
-    function checkSetbits(n) {
-        let count = 0;
-        while(n) {
-            n = n & (n-1);
-            count++;
-        }
-        return count;
-    }
+    // };
 
-    return {checkArray, getTurn, displayOverlay, refresh};
+    return {setTurn, getTurn, displayOverlay, refresh, fillBoardWithMark, fetchEmptyIndex, checkCurrentState};
 })();
+
+function miniMaxGameplay(currBoard, currMark) {
+    const emptyIndexes = gamePlay.fetchEmptyIndex(currBoard);
+
+    if(gamePlay.checkCurrentState(currBoard, P1)) {
+        return 1;
+    } else if(gamePlay.checkCurrentState(currBoard, P2)) {
+        return -1;
+    } else if(gamePlay.fetchEmptyIndex(currBoard).length == 0) {
+        return 0;
+    }
+
+    let allPlayInfo = [];
+    for(let i = 0; i<emptyIndexes.length; i++) {
+        let currPlayInfo = {};
+        let result;
+        currPlayInfo.index = currBoard[emptyIndexes[i]];
+        currBoard[i] = currMark;
+        if(currMark == P1) {
+            result = miniMaxGameplay(currBoard, P2);
+            currPlayInfo.score = result;
+        } else {
+            result = miniMaxGameplay(currBoard, P1);
+            currPlayInfo.score = result;
+        }
+        currBoard[emptyIndexes[i]] = currPlayInfo.index;
+        allPlayInfo.push(currPlayInfo);
+    }
+
+    let bestTestPlay = null;
+
+    if(currMark == P1) {
+        let bestScore = -Infinity;
+        for(let i = 0;i<allPlayInfo.length; i++) {
+            if(allPlayInfo[i].score > bestScore) {
+                bestScore = allPlayInfo[i].score;
+                bestTestPlay = i;
+            }
+        }
+    } else {
+        let bestScore = Infinity;
+        for(let i = 0;i<allPlayInfo.length; i++) {
+            if(allPlayInfo[i].score < bestScore) {
+                bestScore = allPlayInfo[i].score;
+                bestTestPlay = i;
+            }
+        }
+    }
+
+    return allPlayInfo[bestTestPlay];
+
+}
 
 (function (selector) {
     let boxes = document.querySelectorAll(selector);
     let restartButton = document.querySelector('#restart');
     let humanGif = document.querySelector('#human');
     let homeButton = document.querySelector('#home');
+    let aiGif = document.querySelector('#robot');
 
-    let player1 = player('Player 1');
-    let player2 = player('Player 2');
+    let player1 = player('Player 1', 'X');
+    let player2 = player('Player 2', 'O');
 
     let init = function() {
         boxes.forEach(box => {
             box.addEventListener('click', addXorO);
         });
-        restartButton.addEventListener('click', gamePlay.refresh.bind(this, player1, player2));
-        humanGif.addEventListener('click', function() {
-            document.querySelector('#first-page').style.display = 'none';
-            document.querySelector('#second-page').style.display = 'block';
-        });
+        restartButton.addEventListener('click', gamePlay.refresh);
+        humanGif.addEventListener('click', displayBoard);
+        aiGif.addEventListener('click', function() {
+            aiActive = true;
+            displayBoard();
+        })
 
         homeButton.addEventListener('click', function() {
-            gamePlay.refresh(player1, player2);
+            gamePlay.refresh();
             document.querySelector('#first-page').style.display = 'block';
             document.querySelector('#second-page').style.display = 'none';
         });
     }
+
+    displayBoard = function() {
+        document.querySelector('#first-page').style.display = 'none';
+        document.querySelector('#second-page').style.display = 'block';
+    };
 
     function addXorO(e) {
         if (e.target.childNodes.length == 0) {
@@ -113,21 +194,35 @@ let gamePlay = (function() {
                 let img = document.createElement('img');
                 img.setAttribute('src','pngs/x.png');
                 e.target.appendChild(img);
-                player1.fillPlayerArray(e.target.getAttribute('id').split('-')[1]);
-                if (gamePlay.checkArray(player1.getPlayerArray())) {
+                gamePlay.fillBoardWithMark(gameBoard.board, e.target.getAttribute('id').split('-')[1], player1.mark);
+                gamePlay.setTurn(P2);
+                if (gamePlay.checkCurrentState(gameBoard.board, player1.mark)) {
                     gamePlay.displayOverlay(player1.name);
                 }
+                
             } else {
                 let img = document.createElement('img');
                 img.setAttribute('src','pngs/o.png');
                 e.target.appendChild(img);
-                player2.fillPlayerArray(e.target.getAttribute('id').split('-')[1]);
-                if (gamePlay.checkArray(player2.getPlayerArray())) {
+                gamePlay.fillBoardWithMark(gameBoard.board, e.target.getAttribute('id').split('-')[1], player2.mark);
+                gamePlay.setTurn(P1);
+                if (gamePlay.checkCurrentState(gameBoard.board, player2.mark)) {
                     gamePlay.displayOverlay(player2.name);
                 }
             }
+            if(gamePlay.fetchEmptyIndex(gameBoard.board).length == 0) {
+                gamePlay.displayOverlay('');
+                return;
+            } 
 
+            if(aiActive ) {
+                const bestPlay = miniMaxGameplay(gameBoard.board, P1);
+                gamePlay.fillBoardWithMark(gameBoard.board, bestPlay.index, P1);
+                document.querySelector('box-'+bestPlay.index).appendChild(document.createElement('img').setAttribute('src', 'pngs/x.png'));
+                gamePlay.setTurn(P2);
+            }
         }
+        
 
     }
 
