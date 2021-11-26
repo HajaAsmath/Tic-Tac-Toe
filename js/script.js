@@ -3,7 +3,6 @@ const P2 = 'O';
 let aiActive = false;
 
 let player = function(name, mark) {
-
     this.name = name;
 
     this.mark = mark;
