@@ -109,7 +109,7 @@ let gamePlay = (function() {
 })();
 
 function miniMaxGameplay(currBoard, currMark) {
-
+    
     const emptyIndexes = gamePlay.fetchEmptyIndex(currBoard);
 
     if(gamePlay.checkCurrentState(currBoard, P1)) {
@@ -121,7 +121,6 @@ function miniMaxGameplay(currBoard, currMark) {
     }
 
     let allPlayInfo = [];
-    
     for(let i = 0; i<emptyIndexes.length; i++) {
         let currPlayInfo = {};
         let result;
