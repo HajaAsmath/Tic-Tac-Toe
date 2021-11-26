@@ -157,7 +157,6 @@ function miniMaxGameplay(currBoard, currMark) {
     }
 
     return allPlayInfo[bestTestPlay];
-
 }
 
 (function (selector) {
