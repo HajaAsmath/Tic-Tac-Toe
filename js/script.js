@@ -103,7 +103,6 @@ let gamePlay = (function() {
         document.querySelector('#result').remove();
         document.querySelector('#overlay').style.display = 'none';
     };
-    
 
     return {setTurn, getTurn, displayOverlay, refresh, fillBoardWithMark, fetchEmptyIndex, checkCurrentState};
 })();
