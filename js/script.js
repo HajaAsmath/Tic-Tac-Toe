@@ -15,7 +15,6 @@ let gameBoard = (function() {
 
     let board = [...Array(9).keys()];
 
-
     this.clearBoard = function() {
         for(let i = 0;i<board.length;i++){
             board[i] = i;
@@ -94,11 +93,7 @@ let gamePlay = (function() {
         document.querySelector('#result').remove();
         document.querySelector('#overlay').style.display = 'none';
     };
-
-    // this.fillInRandomBox = function(board) {
-    //     let random =  Math.floor((Math.random() * 9) + 1);
-
-    // };
+    
 
     return {setTurn, getTurn, displayOverlay, refresh, fillBoardWithMark, fetchEmptyIndex, checkCurrentState};
 })();
@@ -107,11 +102,11 @@ function miniMaxGameplay(currBoard, currMark) {
     const emptyIndexes = gamePlay.fetchEmptyIndex(currBoard);
 
     if(gamePlay.checkCurrentState(currBoard, P1)) {
-        return 1;
+        return {score : 1};
     } else if(gamePlay.checkCurrentState(currBoard, P2)) {
-        return -1;
+        return {score : -1};
     } else if(gamePlay.fetchEmptyIndex(currBoard).length == 0) {
-        return 0;
+        return {score : 0};
     }
 
     let allPlayInfo = [];
@@ -119,13 +114,13 @@ function miniMaxGameplay(currBoard, currMark) {
         let currPlayInfo = {};
         let result;
         currPlayInfo.index = currBoard[emptyIndexes[i]];
-        currBoard[i] = currMark;
-        if(currMark == P1) {
+        currBoard[emptyIndexes[i]] = currMark;
+        if(currMark === P1) {
             result = miniMaxGameplay(currBoard, P2);
-            currPlayInfo.score = result;
+            currPlayInfo.score = result.score;
         } else {
             result = miniMaxGameplay(currBoard, P1);
-            currPlayInfo.score = result;
+            currPlayInfo.score = result.score;
         }
         currBoard[emptyIndexes[i]] = currPlayInfo.index;
         allPlayInfo.push(currPlayInfo);
@@ -133,7 +128,7 @@ function miniMaxGameplay(currBoard, currMark) {
 
     let bestTestPlay = null;
 
-    if(currMark == P1) {
+    if(currMark === P1) {
         let bestScore = -Infinity;
         for(let i = 0;i<allPlayInfo.length; i++) {
             if(allPlayInfo[i].score > bestScore) {
@@ -170,7 +165,10 @@ function miniMaxGameplay(currBoard, currMark) {
             box.addEventListener('click', addXorO);
         });
         restartButton.addEventListener('click', gamePlay.refresh);
-        humanGif.addEventListener('click', displayBoard);
+        humanGif.addEventListener('click', function() {
+            aiActive = false;
+            displayBoard();
+        });
         aiGif.addEventListener('click', function() {
             aiActive = true;
             displayBoard();
@@ -212,15 +210,22 @@ function miniMaxGameplay(currBoard, currMark) {
             }
             if(gamePlay.fetchEmptyIndex(gameBoard.board).length == 0) {
                 gamePlay.displayOverlay('');
+                gamePlay.setTurn(P2);
                 return;
             } 
 
-            if(aiActive ) {
+            if(aiActive) {
                 const bestPlay = miniMaxGameplay(gameBoard.board, P1);
+                console.log(bestPlay);
                 gamePlay.fillBoardWithMark(gameBoard.board, bestPlay.index, P1);
-                document.querySelector('box-'+bestPlay.index).appendChild(document.createElement('img').setAttribute('src', 'pngs/x.png'));
+                let img = document.createElement('img');
+                img.setAttribute('src','pngs/x.png');
+                document.querySelector('#box-'+bestPlay.index).appendChild(img);
+                if (gamePlay.checkCurrentState(gameBoard.board, P1)) {
+                    gamePlay.displayOverlay('AI');
+                }
                 gamePlay.setTurn(P2);
-            }
+            } 
         }
         
 
