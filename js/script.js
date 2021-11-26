@@ -3,7 +3,6 @@ const P2 = 'O';
 let aiActive = false;
 
 let player = function(name, mark) {
-
     this.name = name;
 
     this.mark = mark;
@@ -19,6 +18,16 @@ let gameBoard = (function() {
         for(let i = 0;i<board.length;i++){
             board[i] = i;
         }
+    }
+
+    this.createImageDiv = function(mark) {
+        let img = document.createElement('img');
+        if(mark == P1) {
+            img.setAttribute('src','pngs/x.png');
+        } else {
+            img.setAttribute('src','pngs/o.png');
+        }
+        return img;
     }
 
     return {board, clearBoard};
@@ -93,12 +102,12 @@ let gamePlay = (function() {
         document.querySelector('#result').remove();
         document.querySelector('#overlay').style.display = 'none';
     };
-    
 
     return {setTurn, getTurn, displayOverlay, refresh, fillBoardWithMark, fetchEmptyIndex, checkCurrentState};
 })();
 
 function miniMaxGameplay(currBoard, currMark) {
+    
     const emptyIndexes = gamePlay.fetchEmptyIndex(currBoard);
 
     if(gamePlay.checkCurrentState(currBoard, P1)) {
@@ -147,7 +156,6 @@ function miniMaxGameplay(currBoard, currMark) {
     }
 
     return allPlayInfo[bestTestPlay];
-
 }
 
 (function (selector) {
@@ -157,8 +165,8 @@ function miniMaxGameplay(currBoard, currMark) {
     let homeButton = document.querySelector('#home');
     let aiGif = document.querySelector('#robot');
 
-    let player1 = player('Player 1', 'X');
-    let player2 = player('Player 2', 'O');
+    let player1 = player('Player 1', P1);
+    let player2 = player('Player 2', P2);
 
     let init = function() {
         boxes.forEach(box => {
@@ -187,27 +195,24 @@ function miniMaxGameplay(currBoard, currMark) {
     };
 
     function addXorO(e) {
+
         if (e.target.childNodes.length == 0) {
             if(gamePlay.getTurn() == P1) {
-                let img = document.createElement('img');
-                img.setAttribute('src','pngs/x.png');
-                e.target.appendChild(img);
+                e.target.appendChild(gameBoard.createImageDiv(P1));
                 gamePlay.fillBoardWithMark(gameBoard.board, e.target.getAttribute('id').split('-')[1], player1.mark);
                 gamePlay.setTurn(P2);
                 if (gamePlay.checkCurrentState(gameBoard.board, player1.mark)) {
                     gamePlay.displayOverlay(player1.name);
                 }
-                
             } else {
-                let img = document.createElement('img');
-                img.setAttribute('src','pngs/o.png');
-                e.target.appendChild(img);
+                e.target.appendChild(gameBoard.createImageDiv(P2));
                 gamePlay.fillBoardWithMark(gameBoard.board, e.target.getAttribute('id').split('-')[1], player2.mark);
                 gamePlay.setTurn(P1);
                 if (gamePlay.checkCurrentState(gameBoard.board, player2.mark)) {
                     gamePlay.displayOverlay(player2.name);
                 }
             }
+
             if(gamePlay.fetchEmptyIndex(gameBoard.board).length == 0) {
                 gamePlay.displayOverlay('');
                 gamePlay.setTurn(P2);
@@ -216,11 +221,8 @@ function miniMaxGameplay(currBoard, currMark) {
 
             if(aiActive) {
                 const bestPlay = miniMaxGameplay(gameBoard.board, P1);
-                console.log(bestPlay);
                 gamePlay.fillBoardWithMark(gameBoard.board, bestPlay.index, P1);
-                let img = document.createElement('img');
-                img.setAttribute('src','pngs/x.png');
-                document.querySelector('#box-'+bestPlay.index).appendChild(img);
+                document.querySelector('#box-'+bestPlay.index).appendChild(gamePlay.createImageDiv(P1));
                 if (gamePlay.checkCurrentState(gameBoard.board, P1)) {
                     gamePlay.displayOverlay('AI');
                 }
@@ -233,4 +235,3 @@ function miniMaxGameplay(currBoard, currMark) {
 
     init();
 })('#game-container div');
-
