@@ -237,4 +237,3 @@ function miniMaxGameplay(currBoard, currMark) {
 
     init();
 })('#game-container div');
-
