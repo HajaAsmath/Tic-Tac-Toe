@@ -20,7 +20,7 @@ let gameBoard = (function() {
         }
     }
 
-    this.createImageDiv = function(mark) {
+    this.createMarkDiv = function(mark) {
         let img = document.createElement('img');
         if(mark == P1) {
             img.setAttribute('src','pngs/x.png');
@@ -30,7 +30,7 @@ let gameBoard = (function() {
         return img;
     }
 
-    return {board, clearBoard};
+    return {board, clearBoard, createMarkDiv};
 })();
 
 let gamePlay = (function() {
@@ -198,14 +198,14 @@ function miniMaxGameplay(currBoard, currMark) {
 
         if (e.target.childNodes.length == 0) {
             if(gamePlay.getTurn() == P1) {
-                e.target.appendChild(gameBoard.createImageDiv(P1));
+                e.target.appendChild(gameBoard.createMarkDiv(P1));
                 gamePlay.fillBoardWithMark(gameBoard.board, e.target.getAttribute('id').split('-')[1], player1.mark);
                 gamePlay.setTurn(P2);
                 if (gamePlay.checkCurrentState(gameBoard.board, player1.mark)) {
                     gamePlay.displayOverlay(player1.name);
                 }
             } else {
-                e.target.appendChild(gameBoard.createImageDiv(P2));
+                e.target.appendChild(gameBoard.createMarkDiv(P2));
                 gamePlay.fillBoardWithMark(gameBoard.board, e.target.getAttribute('id').split('-')[1], player2.mark);
                 gamePlay.setTurn(P1);
                 if (gamePlay.checkCurrentState(gameBoard.board, player2.mark)) {
@@ -222,7 +222,7 @@ function miniMaxGameplay(currBoard, currMark) {
             if(aiActive) {
                 const bestPlay = miniMaxGameplay(gameBoard.board, P1);
                 gamePlay.fillBoardWithMark(gameBoard.board, bestPlay.index, P1);
-                document.querySelector('#box-'+bestPlay.index).appendChild(gamePlay.createImageDiv(P1));
+                document.querySelector('#box-'+bestPlay.index).appendChild(gameBoard.createMarkDiv(P1));
                 if (gamePlay.checkCurrentState(gameBoard.board, P1)) {
                     gamePlay.displayOverlay('AI');
                 }
